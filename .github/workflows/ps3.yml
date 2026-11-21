@@ -1,0 +1,39 @@
+name: Build PS3
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-ps3:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar dependencias
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential git wget python3 pkg-config
+
+      - name: Descargar codigo de SiemON
+        run: |
+          git clone https://github.com/SiemON-SMX/xash3d-fwgs.git siemon
+          ls siemon
+
+      - name: Instalar PSL1GHT
+        run: |
+          git clone https://github.com/ps3dev/psl1ght.git
+          cd psl1ght
+          ./build.sh || true
+
+      - name: Intentar compilar para PS3
+        run: |
+          cd siemon
+          ./waf configure --help || true
+          ./waf configure || true
+          ./waf build || true
+
+      - name: Subir lo que salio
+        uses: actions/upload-artifact@v4
+        with:
+          name: xash-ps3-intento
+          path: siemon/build/
